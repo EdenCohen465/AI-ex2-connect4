@@ -4,6 +4,7 @@ import random, util
 import gameUtil as u
 import graphics as g
 
+
 class Agent:
     """
     An agent must define a getAction method, but may also define the
@@ -20,6 +21,7 @@ class Agent:
         The Agent will receive a GameState and piece and must return an action
         """
         util.raiseNotDefined()
+
 
 class GameStateData:
 
@@ -45,12 +47,12 @@ class GameStateData:
             copiedStates.append(agentState.copy())
         return copiedStates
 
-
     def initialize(self):
         """
         Creates an initial game state from a layout array (see layout.py).
         """
         self.agentStates = []
+
 
 class GameState:
     # static variable keeps track of which states have had getLegalActions called
@@ -74,9 +76,9 @@ class GameState:
         self.turn = u.AI
 
     def create_board(self):
-        '''
+        """
         create the board game and return it
-        '''
+        """
         board = np.zeros((u.ROW_COUNT, u.COLUMN_COUNT))
         return board
 
@@ -94,18 +96,17 @@ class GameState:
         actions = []
         if not self.isWin() and not self.isLose():
             for col in range(u.COLUMN_COUNT):
-                if(self.is_valid_location(col)):
+                if (self.is_valid_location(col)):
                     actions.append(col)
         return actions
 
     def get_piece_player(self):
-        '''
+        """
         return: the current player piece
-        '''
+        """
         if self.turn == 0:
             return u.PLAYER_PIECE
         return u.AI_PIECE
-
 
     def winning(self, piece):
         # Check horizontal locations for win
@@ -145,17 +146,17 @@ class GameState:
         return False
 
     def isWin(self):
-        '''Return is the current player is winning'''
+        """Return is the current player is winning"""
         return self.winning(self.get_piece_player())
 
     def isLose(self):
-        '''Return is the opponent player is winning'''
+        """Return is the opponent player is winning"""
         return self.winning(self.get_opp_piece(self.get_piece_player()))
 
     def is_terminal(self):
-        '''
+        """
         Return whether or not that state is terminal
-        '''
+        """
         return self.isWin() or self.isLose() or len(self.getLegalActions()) == 0
 
     def pick_best_move(self):
@@ -173,9 +174,9 @@ class GameState:
         return best_col
 
     def evaluate_window(self, window, piece):
-        '''
+        """
         Evaluate the chance of winning for thae specific piece in window in size 4
-        '''
+        """
         score = 0
         opp_piece = self.get_opp_piece(piece)
 
@@ -193,31 +194,31 @@ class GameState:
         return score
 
     def getScore(self):
-        '''
+        """
         :return: score of the board for the current player
-        '''
+        """
         score = 0
         piece = self.get_piece_player()
-        ## Score center column
+        # Score center column
         center_array = [int(i) for i in list(self.board[:, u.COLUMN_COUNT // 2])]
         center_count = center_array.count(piece)
         score += center_count * 3
 
-        ## Score Horizontal
+        # Score Horizontal
         for r in range(u.ROW_COUNT):
             row_array = [int(i) for i in list(self.board[r, :])]
             for c in range(u.COLUMN_COUNT - 3):
                 window = row_array[c:c + u.WINDOW_LENGTH]
                 score += self.evaluate_window(window, piece)
 
-        ## Score Vertical
+        # Score Vertical
         for c in range(u.COLUMN_COUNT):
             col_array = [int(i) for i in list(self.board[:, c])]
             for r in range(u.ROW_COUNT - 3):
                 window = col_array[r:r + u.WINDOW_LENGTH]
                 score += self.evaluate_window(window, piece)
 
-        ## Score posiive sloped diagonal
+        # Score posiive sloped diagonal
         for r in range(u.ROW_COUNT - 3):
             for c in range(u.COLUMN_COUNT - 3):
                 window = [self.board[r + i][c + i] for i in range(u.WINDOW_LENGTH)]
@@ -231,41 +232,39 @@ class GameState:
         return score
 
     def is_valid_location(self, col):
-        '''
+        """
         Return if insert a piece to the specific col is valid
-        '''
-        return self.board[u.ROW_COUNT-1][col] == 0
+        """
+        return self.board[u.ROW_COUNT - 1][col] == 0
 
     def get_next_open_row(self, col):
-        '''
+        """
         Return the first empty row in the specific col
-        '''
+        """
         for r in range(u.ROW_COUNT):
             if self.board[r][col] == 0:
                 return r
 
     def drop_piece(self, row, col, piece):
-        '''
+        """
         Change the board in the current state with the action of dropping piece in the specific row,col.
-        '''
+        """
         self.board[row][col] = piece
 
     def get_opp_piece(self, piece):
-        '''
+        """
         return: the opponent player piece
-        '''
+        """
         if piece == u.AI_PIECE:
             return u.PLAYER_PIECE
         return u.AI_PIECE
 
     def switch_turn(self, piece):
-        '''
+        """
         switch the turn in the state and return the updated player turn
-        '''
-        self.turn = (piece +1) % 2
+        """
+        self.turn = (piece + 1) % 2
         return self.turn
-
-
 
     def generateSuccessor(self, agentIndex, action):
         """
@@ -279,13 +278,11 @@ class GameState:
         # Let agent's logic deal with its action's effects on the board
         state.drop_piece(row, action, piece)
 
-        # Book keeping
+        # Bookkeeping
         state.data._agentMoved = agentIndex
         GameState.explored.add(self)
         GameState.explored.add(state)
         return state
-
-
 
 
 def runGames(graphicMode, gameMode, agent):
@@ -297,25 +294,24 @@ def runGames(graphicMode, gameMode, agent):
 
     game_over = False
 
-
     while not game_over:
         # ask for player 1 input
         if state.turn == u.PLAYER:
             if graphicMode:
                 col = g.eventListener(state.turn)
-                if col != None:
+                if col is not None:
                     print(col)
             else:
                 col = int(input("Player 1 make your selection (0-6:)"))
                 print(col)
 
-            if col != None:
+            if col is not None:
                 if state.is_valid_location(col):
                     state = state.generateSuccessor(u.PLAYER_PIECE, col)
 
                     if state.isWin():
                         if graphicMode:
-                            g.winning(u.PLAYER_PIECE,u.RED)
+                            g.winning(u.PLAYER_PIECE, u.RED)
                         else:
                             print("Player 1 wins!")
                         game_over = True
@@ -336,7 +332,7 @@ def runGames(graphicMode, gameMode, agent):
                 else:
                     col = int(input("Player 2 make your selection (0-6:)"))
                     print(col)
-            else: #in case we use AI agent
+            else:  # in case we use AI agent
                 col = agent.getAction(state)
 
             if col != None:
@@ -345,7 +341,7 @@ def runGames(graphicMode, gameMode, agent):
 
                     if state.isWin():
                         if graphicMode:
-                            g.winning(u.AI_PIECE,u.YELLOW)
+                            g.winning(u.AI_PIECE, u.YELLOW)
                         else:
                             print("Player 2 wins!")
                         game_over = True
@@ -356,7 +352,6 @@ def runGames(graphicMode, gameMode, agent):
                     state.switch_turn(state.turn)
                     print("*************************************************************")
 
-
         if graphicMode:
             g.draw_board(state.board)
 
@@ -364,24 +359,19 @@ def runGames(graphicMode, gameMode, agent):
             g.wait_to_end()
 
 
-
-
-
-
 if __name__ == '__main__':
-    # graphicMode - True- for graphic mode. False- for textual mode
-    # gameMode  - get the value 2- for player vs. player or 1- for palyer vs. AI_agent
-    # depth - the max depth to explore the minimax tree
-    # type - the name of the agent will play as AI_agent (one of "BestRandom", "MinimaxAgent", "AlphaBetaAgent", "ExpectimaxAgent")
+    # graphicMode - True- for graphic mode. False- for textual mode gameMode  - get the value 2- for player vs.
+    # player or 1- for palyer vs. AI_agent depth - the max depth to explore the minimax tree type - the name of the
+    # agent will play as AI_agent (one of "BestRandom", "MinimaxAgent", "AlphaBetaAgent", "ExpectimaxAgent")
 
     graphicMode = True
-    gameMode  = 2
-    depth = 0 # must be at least 3 with different agent then Random
-    type = ""
+    gameMode = 1
+    depth = 4  # must be at least 3 with different agent then Random
+    type = "AlphaBetaAgent"
 
     agent = None
-    if gameMode  == 1:
+    if gameMode == 1:
         agentType = util.loadAgent(type)
         agent = agentType(**{"depth": depth})  # Instantiate agent with agentArgs
 
-    runGames(graphicMode, gameMode , agent)
+    runGames(graphicMode, gameMode, agent)
